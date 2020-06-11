@@ -15,21 +15,23 @@ const browserSync = require('browser-sync');
 const reload = browserSync.reload;
 //For svg sprite
 const svgSprite = require('gulp-svg-sprite');
+const cheerio = require('gulp-cheerio');
+const replace = require('gulp-replace');
 
 const root = `./app`;
 
 const config = {
-  scss:{
+  scss: {
     dir: `${root}/scss/**/*.scss`,
     src: `${root}/scss/**/*.scss`,
     dist: `${root}/css`
   },
-  html:{
+  html: {
     dir: `${root}/dev_html/**/*.html`,
     src: `${root}/dev_html/*.html`,
     dist: `${root}/html`
   },
-  svg:{
+  svg: {
     src: `${root}/img/svg-icons/*.svg`,
     dist: `${root}/img/sprite-svg`
   },
@@ -77,6 +79,15 @@ exports.clean = clean;
 // Generate svg sprite
 const sprite = () => {
   return gulp.src(config.svg.src)
+    .pipe(cheerio({
+      run: ($) => {
+        $('[fill]').removeAttr('fill');
+        $('[stroke]').removeAttr('stroke');
+        $('[style]').removeAttr('style');
+      },
+      parserOptions: { xmlMode: true }
+    }))
+    .pipe(replace('&gt;', '>'))
     .pipe(svgSprite({
       mode: {
         stack: {
